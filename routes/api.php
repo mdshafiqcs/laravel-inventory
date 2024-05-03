@@ -30,10 +30,12 @@ Route::middleware(['auth:sanctum'])->group(function() {
     // ================== Inventory Routes ===================
     Route::prefix('inventory')->group(function () {
         Route::get("/all", [InventoryController::class, 'all']);
+        Route::get("/all-deleted", [InventoryController::class, 'allDeleted']);
         Route::post("/create", [InventoryController::class, 'create']);
         Route::put("/update", [InventoryController::class, 'update']);
         Route::delete("/soft-delete/id={id}", [InventoryController::class, 'softDelete']);
         Route::delete("/delete/id={id}", [InventoryController::class, 'delete']);
+        Route::get("/restore/id={id}", [InventoryController::class, 'restore']);
     }); 
     
     

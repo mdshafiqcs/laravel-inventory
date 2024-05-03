@@ -28,6 +28,20 @@ class InventoryController extends Controller
         }
     }
 
+    public function allDeleted() {
+        try {
+            
+            $userId = auth()->user()->id;
+
+            $inventories = Inventory::findByUserId($userId, true);
+
+            return $this->successResponse($inventories);
+
+        } catch (\Throwable $th) {
+            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        }
+    }
+
     public function create(Request $request){
 
         try {
@@ -116,6 +130,28 @@ class InventoryController extends Controller
         }
     }
 
+    public function restore($id) {
+        try {
+
+            $userId = auth()->user()->id;
+
+            $inventory = Inventory::findOne($id, $userId, true);
+            if(!$inventory){
+                return $this->errorResponse('Inventory not found in Trash.', 404);
+            }
+
+            $inventory->update([
+                "is_deleted" => false,
+                "updated_at" => Carbon::now(),
+            ]);
+
+            return $this->successResponse("", "Inventory Restored from Trash Successfully.");
+            
+        } catch (\Throwable $th) {
+            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        }
+    }
+
     public function delete($id) {
         try {
 
@@ -123,7 +159,7 @@ class InventoryController extends Controller
 
             $inventory = Inventory::findOne($id, $userId, true);
             if(!$inventory){
-                return $this->errorResponse('Inventory not found Or this Inventory is not in Trash list.', 404);
+                return $this->errorResponse('Inventory not found in Trash', 404);
             }
 
             $inventory->delete();

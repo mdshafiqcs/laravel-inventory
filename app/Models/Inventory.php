@@ -19,8 +19,8 @@ class Inventory extends Model
     	return $this->belongsTo(User::class,'user_id','id');
     }
 
-    static public function findByUserId(int $userId) {
-        $result = self::where("user_id", $userId)->where("is_deleted", 0)->get();
+    static public function findByUserId(int $userId, bool $isDeleted = false) {
+        $result = self::where("user_id", $userId)->where("is_deleted", $isDeleted)->get();
         return $result;
     }
 
