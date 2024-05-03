@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\InventoryController;
+use App\Http\Controllers\Api\ItemController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,6 +37,17 @@ Route::middleware(['auth:sanctum'])->group(function() {
         Route::delete("/soft-delete/id={id}", [InventoryController::class, 'softDelete']);
         Route::delete("/delete/id={id}", [InventoryController::class, 'delete']);
         Route::get("/restore/id={id}", [InventoryController::class, 'restore']);
+    }); 
+
+    // ================== Item Routes ===================
+    Route::prefix('item')->group(function () {
+        Route::get("/inventoryid={inventoryId}/all", [ItemController::class, 'all']);
+        Route::get("/inventoryid={inventoryId}/all-deleted", [ItemController::class, 'allDeleted']);
+        Route::post("/create", [ItemController::class, 'create']);
+        Route::put("/update", [ItemController::class, 'update']);
+        Route::delete("/soft-delete/id={id}", [ItemController::class, 'softDelete']);
+        Route::delete("/delete/id={id}", [ItemController::class, 'delete']);
+        Route::get("/restore/id={id}", [ItemController::class, 'restore']);
     }); 
     
     
