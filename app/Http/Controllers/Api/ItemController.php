@@ -60,7 +60,7 @@ class ItemController extends Controller
         } catch(NotFoundException $e){
             return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
         } catch(GeneralException $e){
-            return $this->errorResponse($e->getMessage(), 400, Status::ERROR);
+            return $this->errorResponse($e->getMessage());
         } catch (\Throwable $th) {
             return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
         }
