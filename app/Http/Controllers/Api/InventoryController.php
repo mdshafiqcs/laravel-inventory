@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use App\Enum\Status;
+use App\Exceptions\GeneralException;
+use App\Exceptions\NotFoundException;
 use App\Models\Inventory;
+use App\Service\InventoryService;
 use App\Traits\ResponseTrait;
 use Carbon\Carbon;
 
@@ -52,23 +55,14 @@ class InventoryController extends Controller
 
             $userId = auth()->user()->id;
 
-            $inventory = Inventory::findByName($request->name, $userId);
-            if($inventory){
-                return $this->errorResponse("Inventory already exists with this name");
-            }
-
-            $inventory = Inventory::create([
-                "user_id" => $userId,
-                "name" => $request->name,
-                "description" => $request->description,
-                "created_at" => Carbon::now(),
-            ]);
+            $inventory = InventoryService::createInventory($request, $userId);
 
             return $this->successResponse($inventory, "Inventory Created Successfully.");
 
         } catch(ValidationException $e){
             return $this->errorResponse($e->getMessage(), 422, Status::ERROR);
-
+        } catch(GeneralException $e){
+            return $this->errorResponse($e->getMessage());
         } catch (\Throwable $th) {
             return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
         }
@@ -86,23 +80,14 @@ class InventoryController extends Controller
 
             $userId = auth()->user()->id;
 
-            $inventory = Inventory::findOne($request->id, $userId);
-            if(!$inventory){
-                return $this->errorResponse('Inventory not found.', 404);
-            }
-
-            $inventory->update([
-                "name" => $request->name,
-                "description" => $request->description,
-                "updated_at" => Carbon::now(),
-            ]);
+            $inventory = InventoryService::updateInventory($request, $userId);
 
             return $this->successResponse($inventory, "Inventory Updated Successfully.");
 
-
         } catch(ValidationException $e){
             return $this->errorResponse($e->getMessage(), 422, Status::ERROR);
-
+        } catch(NotFoundException $e){
+            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
         } catch (\Throwable $th) {
             return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
         }
@@ -113,18 +98,12 @@ class InventoryController extends Controller
 
             $userId = auth()->user()->id;
 
-            $inventory = Inventory::findOne($id, $userId);
-            if(!$inventory){
-                return $this->errorResponse('Inventory not found.', 404);
-            }
-
-            $inventory->update([
-                "is_deleted" => true,
-                "updated_at" => Carbon::now(),
-            ]);
+            InventoryService::softDeleteInventory($id, $userId);
 
             return $this->successResponse("", "Inventory Moved to Trash Successfully.");
             
+        } catch ( NotFoundException $e) {
+            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
         } catch (\Throwable $th) {
             return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
         }
@@ -135,18 +114,12 @@ class InventoryController extends Controller
 
             $userId = auth()->user()->id;
 
-            $inventory = Inventory::findOne($id, $userId, true);
-            if(!$inventory){
-                return $this->errorResponse('Inventory not found in Trash.', 404);
-            }
-
-            $inventory->update([
-                "is_deleted" => false,
-                "updated_at" => Carbon::now(),
-            ]);
+            InventoryService::restoreInventory($id, $userId);
 
             return $this->successResponse("", "Inventory Restored from Trash Successfully.");
             
+        } catch ( NotFoundException $e) {
+            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
         } catch (\Throwable $th) {
             return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
         }
@@ -157,15 +130,12 @@ class InventoryController extends Controller
 
             $userId = auth()->user()->id;
 
-            $inventory = Inventory::findOne($id, $userId, true);
-            if(!$inventory){
-                return $this->errorResponse('Inventory not found in Trash', 404);
-            }
-
-            $inventory->delete();
+            InventoryService::deleteInventory($id, $userId);
 
             return $this->successResponse("", "Inventory Deleted Successfully.");
             
+        } catch ( NotFoundException $e) {
+            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
         } catch (\Throwable $th) {
             return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
         }

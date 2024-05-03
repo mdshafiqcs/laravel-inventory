@@ -11,10 +11,6 @@ use App\Exceptions\GeneralException;
 use App\Exceptions\NotFoundException;
 use App\Models\Item;
 use App\Traits\ResponseTrait;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\File;
-use App\Helper\CommonHelper;
-use App\Models\Inventory;
 use App\Service\ItemService;
 
 class ItemController extends Controller
@@ -33,9 +29,19 @@ class ItemController extends Controller
         }
     }
 
-    public function create(Request $request) {
+    public function allDeleted($inventoryId) {
+        try {
 
-        $item = new Item();
+            $items = Item::findByInventoryId($inventoryId, true);
+
+            return $this->successResponse($items);
+
+        } catch (\Throwable $th) {
+            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        }
+    }
+
+    public function create(Request $request) {
 
         try {
             $request->validate([
@@ -65,6 +71,79 @@ class ItemController extends Controller
             return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
         }
     }
+
+    public function update(Request $request) {
+
+        try {
+            $request->validate([
+                'id' => 'required',
+                'name' => 'required',
+                'description' => 'required',
+                'image' => 'sometimes|mimes:jpg,png,jpeg',
+                'qty' => 'required',
+                'price' => 'required',
+            ]);
+
+            ItemService::checkUpdateItem($request);
+
+            $item = ItemService::updateItem($request);
+
+            return $this->successResponse($item, "Item Updated Successfully.");
+
+        } catch(ValidationException $e){
+            return $this->errorResponse($e->getMessage(), 422, Status::ERROR);
+        } catch(NotFoundException $e){
+            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
+        } catch(GeneralException $e){
+            return $this->errorResponse($e->getMessage());
+        } catch (\Throwable $th) {
+            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        }
+    }
+
+    public function softDelete($id) {
+        try {
+
+            ItemService::softDeleteItem($id);
+
+            return $this->successResponse("", "Item Moved to Trash Successfully.");
+            
+        } catch ( NotFoundException $e) {
+            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
+        } catch (\Throwable $th) {
+            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        }
+    }
+
+    public function restore($id) {
+        try {
+
+            ItemService::restoreItem($id);
+
+            return $this->successResponse("", "Item Restored from Trash Successfully.");
+            
+        } catch ( NotFoundException $e) {
+            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
+        } catch (\Throwable $th) {
+            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        }
+    }
+
+    public function delete($id) {
+        try {
+
+            ItemService::deleteItem($id);
+
+            return $this->successResponse("", "Item Deleted Successfully.");
+            
+        } catch ( NotFoundException $e) {
+            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
+        } catch (\Throwable $th) {
+            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        }
+    }
+
+
 
     
 }

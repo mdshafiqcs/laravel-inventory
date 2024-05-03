@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('inventory_id')->references('id')->on('inventories')->onDelete('cascade');
             $table->string('name');
             $table->text('description');
-            $table->string('image');
+            $table->string('image')->nullable();
             $table->integer('qty');
             $table->double('price');
             $table->integer('min_stock')->default(0)->comment("when to show low stock alert");

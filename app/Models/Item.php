@@ -24,4 +24,13 @@ class Item extends Model
         return $items;
     }
 
+    static public function findById(int $id, bool $isDeleted = false){
+        $item = Item::where('id', $id)->where('is_deleted', $isDeleted)->first();
+        return $item;
+    }
+
+    
+
+    
+
 }

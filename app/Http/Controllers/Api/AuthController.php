@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 use App\Enum\Status;
+use App\Exceptions\GeneralException;
+use App\Service\AuthService;
 use App\Traits\ResponseTrait;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -32,32 +34,13 @@ class AuthController extends Controller
                 'password' => 'required|min:6',
             ]);
 
-            $user = User::findByEmail($request->email);
-
-            if($user){
-               return $this->errorResponse('User already exists with this email');
-            }
-
             DB::beginTransaction();
 
-            $user = new User();
+            AuthService::checkUserExists($request->email);
 
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->password = Hash::make($request->password);
-            $user->role = UserRole::USER->value;
-            $user->remember_token = Str::random(60) . '-' . time();
-            $user->created_at = Carbon::now();
+            $user = AuthService::createUser($request);
 
-            $user->save();
-
-            $token = $user->createToken($request->email)->plainTextToken;
-            $user->token = $token;
-
-            /* we will send a verification link to user's email. currently we are not using verification. it will be used later on. at this moment, sending emails without queue will have bad impacts on app performance. 
-                $link = url('/verify-email') . '/' . $user->remember_token ;
-                Mail::to($user)->send(new EmailVerificationMail($link));
-            */
+            AuthService::sendVerificationMail($user);
 
             DB::commit();
 
@@ -66,6 +49,10 @@ class AuthController extends Controller
         } catch(ValidationException $e){
             DB::rollBack();
             return $this->errorResponse($e->getMessage(), 422, Status::ERROR);
+
+        } catch(GeneralException $e){
+            DB::rollBack();
+            return $this->errorResponse($e->getMessage());
 
         } catch (\Throwable $th) {
             DB::rollBack();

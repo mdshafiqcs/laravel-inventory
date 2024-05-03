@@ -44,7 +44,7 @@ Route::middleware(['auth:sanctum'])->group(function() {
         Route::get("/inventoryid={inventoryId}/all", [ItemController::class, 'all']);
         Route::get("/inventoryid={inventoryId}/all-deleted", [ItemController::class, 'allDeleted']);
         Route::post("/create", [ItemController::class, 'create']);
-        Route::put("/update", [ItemController::class, 'update']);
+        Route::post("/update", [ItemController::class, 'update']);
         Route::delete("/soft-delete/id={id}", [ItemController::class, 'softDelete']);
         Route::delete("/delete/id={id}", [ItemController::class, 'delete']);
         Route::get("/restore/id={id}", [ItemController::class, 'restore']);
