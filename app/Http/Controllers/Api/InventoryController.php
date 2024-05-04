@@ -31,19 +31,6 @@ class InventoryController extends Controller
         }
     }
 
-    public function allDeleted() {
-        try {
-            
-            $userId = auth()->user()->id;
-
-            $inventories = Inventory::findByUserId($userId, true);
-
-            return $this->successResponse($inventories);
-
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
-        }
-    }
 
     public function create(Request $request){
 
@@ -93,37 +80,6 @@ class InventoryController extends Controller
         }
     }
 
-    public function softDelete($id) {
-        try {
-
-            $userId = auth()->user()->id;
-
-            InventoryService::softDeleteInventory($id, $userId);
-
-            return $this->successResponse("", "Inventory Moved to Trash Successfully.");
-            
-        } catch ( NotFoundException $e) {
-            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
-        }
-    }
-
-    public function restore($id) {
-        try {
-
-            $userId = auth()->user()->id;
-
-            InventoryService::restoreInventory($id, $userId);
-
-            return $this->successResponse("", "Inventory Restored from Trash Successfully.");
-            
-        } catch ( NotFoundException $e) {
-            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
-        }
-    }
 
     public function delete($id) {
         try {

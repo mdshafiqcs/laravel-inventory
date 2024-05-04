@@ -60,49 +60,13 @@ class ItemService {
 
     }
 
-    static public function softDeleteItem($id) {
-        try {
-            
-            $item = Item::findById($id);
-            if(!$item){
-                throw new NotFoundException('Item not found.');
-            }
+   
 
-            $item->update([
-                "is_deleted" => true,
-                "updated_at" => Carbon::now(),
-            ]);
-
-            return $item;
-            
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
-    static public function restoreItem($id) {
-        try {
-            
-            $item = Item::findById($id, true);
-            if(!$item){
-                throw new NotFoundException('Item not found in Trash list.');
-            }
-
-            $item->update([
-                "is_deleted" => false,
-                "updated_at" => Carbon::now(),
-            ]);
-
-            return $item;
-            
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
+   
 
     static public function deleteItem($id) {
         try {
-            
+            DB::beginTransaction();
             $item = Item::find($id);
             if(!$item){
                 throw new NotFoundException('Item not found.');
@@ -112,9 +76,12 @@ class ItemService {
 
             $item->delete();
 
+            DB::commit();
+
             return true;
             
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }

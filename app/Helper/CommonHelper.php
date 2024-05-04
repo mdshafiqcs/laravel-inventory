@@ -23,8 +23,12 @@ class CommonHelper {
 
     static public function deleteImage($path){
       
-        if(file_exists(public_path().'/'.$path)){
-            unlink(public_path().'/'.$path);
+        try {
+            if(file_exists(public_path().'/'.$path)){
+                unlink(public_path().'/'.$path);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
         }
     }
 }

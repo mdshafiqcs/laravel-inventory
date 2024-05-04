@@ -31,23 +31,18 @@ Route::middleware(['auth:sanctum'])->group(function() {
     // ================== Inventory Routes ===================
     Route::prefix('inventory')->group(function () {
         Route::get("/all", [InventoryController::class, 'all']);
-        Route::get("/all-deleted", [InventoryController::class, 'allDeleted']);
         Route::post("/create", [InventoryController::class, 'create']);
         Route::put("/update", [InventoryController::class, 'update']);
-        Route::delete("/soft-delete/id={id}", [InventoryController::class, 'softDelete']);
         Route::delete("/delete/id={id}", [InventoryController::class, 'delete']);
-        Route::get("/restore/id={id}", [InventoryController::class, 'restore']);
+     
     }); 
 
     // ================== Item Routes ===================
     Route::prefix('item')->group(function () {
         Route::get("/inventoryid={inventoryId}/all", [ItemController::class, 'all']);
-        Route::get("/inventoryid={inventoryId}/all-deleted", [ItemController::class, 'allDeleted']);
         Route::post("/create", [ItemController::class, 'create']);
         Route::post("/update", [ItemController::class, 'update']);
-        Route::delete("/soft-delete/id={id}", [ItemController::class, 'softDelete']);
         Route::delete("/delete/id={id}", [ItemController::class, 'delete']);
-        Route::get("/restore/id={id}", [ItemController::class, 'restore']);
     }); 
     
     

@@ -5,8 +5,10 @@ namespace App\Service;
 use App\Exceptions\GeneralException;
 use App\Exceptions\NotFoundException;
 use App\Models\Inventory;
+use App\Models\Item;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InventoryService {
     static public function createInventory(Request $request, int $userId){
@@ -53,62 +55,29 @@ class InventoryService {
         }
     }
 
-    static public function softDeleteInventory(int $id, int $userId){
-
-        try {
-            
-            $inventory = Inventory::findOne($id, $userId);
-            if(!$inventory){
-                throw new NotFoundException('Inventory not found.');
-            }
-
-            $inventory->update([
-                "is_deleted" => true,
-                "updated_at" => Carbon::now(),
-            ]);
-
-            return $inventory;
-            
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
-    static public function restoreInventory(int $id, int $userId){
-
-        try {
-            
-            $inventory = Inventory::findOne($id, $userId, true);
-            if(!$inventory){
-                throw new NotFoundException('Inventory not found in Trash.');
-            }
-
-            $inventory->update([
-                "is_deleted" => false,
-                "updated_at" => Carbon::now(),
-            ]);
-
-            return $inventory;
-            
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
     static public function deleteInventory(int $id, int $userId){
 
         try {
-            
+            DB::beginTransaction();
             $inventory = Inventory::findOne($id, $userId, true);
             if(!$inventory){
                 throw new NotFoundException('Inventory not found in Trash');
             }
 
+            $items = Item::where("inventory_id", $id)->get();
+
+            foreach ($items as $item) {
+                ItemService::deleteItem($item->id);
+            }
+
             $inventory->delete();
+
+            DB::commit();
 
             return $inventory;
             
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }

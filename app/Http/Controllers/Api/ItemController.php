@@ -29,17 +29,6 @@ class ItemController extends Controller
         }
     }
 
-    public function allDeleted($inventoryId) {
-        try {
-
-            $items = Item::findByInventoryId($inventoryId, true);
-
-            return $this->successResponse($items);
-
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
-        }
-    }
 
     public function create(Request $request) {
 
@@ -101,33 +90,7 @@ class ItemController extends Controller
         }
     }
 
-    public function softDelete($id) {
-        try {
 
-            ItemService::softDeleteItem($id);
-
-            return $this->successResponse("", "Item Moved to Trash Successfully.");
-            
-        } catch ( NotFoundException $e) {
-            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
-        }
-    }
-
-    public function restore($id) {
-        try {
-
-            ItemService::restoreItem($id);
-
-            return $this->successResponse("", "Item Restored from Trash Successfully.");
-            
-        } catch ( NotFoundException $e) {
-            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
-        }
-    }
 
     public function delete($id) {
         try {
@@ -143,7 +106,4 @@ class ItemController extends Controller
         }
     }
 
-
-
-    
 }
