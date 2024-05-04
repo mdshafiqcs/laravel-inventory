@@ -69,7 +69,6 @@ class ItemController extends Controller
                 'description' => 'required',
                 'image' => 'sometimes|mimes:jpg,png,jpeg',
                 'qty' => 'required',
-                'price' => 'required',
             ]);
 
             ItemService::checkUpdateItem($request);
