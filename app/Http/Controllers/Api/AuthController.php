@@ -2,22 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enum\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 use App\Enum\Status;
-use App\Exceptions\GeneralException;
 use App\Service\AuthService;
 use App\Traits\ResponseTrait;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AuthController extends Controller
 {
@@ -34,29 +29,22 @@ class AuthController extends Controller
                 'password' => 'required|min:6',
             ]);
 
-            DB::beginTransaction();
+            $user = User::findByEmail($request->email);
 
-            AuthService::checkUserExists($request->email);
+            if($user){
+               return $this->errorResponse('User already exists with this email');
+            }
 
             $user = AuthService::createUser($request);
 
             AuthService::sendVerificationMail($user);
 
-            DB::commit();
-
             return $this->successResponse($user, "Registration Successfull");
             
         } catch(ValidationException $e){
-            DB::rollBack();
             return $this->errorResponse($e->getMessage(), 422, Status::ERROR);
-
-        } catch(GeneralException $e){
-            DB::rollBack();
-            return $this->errorResponse($e->getMessage());
-
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Something went wrong", 500, Status::ERROR);
         }
     }
 
@@ -81,7 +69,7 @@ class AuthController extends Controller
             $color = "green";
             return view('email_verification', compact('message', 'color'));
 
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             $message = "Opps! Something went wrong";
             $color = "black";
             return view('email_verification', compact('message', 'color'));
@@ -112,8 +100,8 @@ class AuthController extends Controller
         } catch(ValidationException $e){
             return $this->errorResponse($e->getMessage(), 422, Status::ERROR);
 
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Something went wrong", 500, Status::ERROR);
         }
     }
 
@@ -134,23 +122,24 @@ class AuthController extends Controller
             return $this->successResponse("","Logout Successfull.");
 
         } 
-         catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+         catch (\Exception $e) {
+            return $this->errorResponse("Something went wrong", 500, Status::ERROR);
         }
     }
 
     public function user(){
         try {
 
-            $user = User::findOrFail(auth()->user()->id);
+            $user = User::find(auth()->user()->id);
+
+            if(!$user){
+               return $this->errorResponse('No User found', 404);
+            }
 
             return $this->successResponse($user);
 
-        } catch(ModelNotFoundException $e){
-            return $this->errorResponse("User not found", 404, Status::ERROR);
-        }
-         catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Something went wrong", 500, Status::ERROR);
         }
     }
 
