@@ -39,7 +39,6 @@ class ItemController extends Controller
                 'description' => 'required',
                 'image' => 'required|mimes:png,jpg,jpeg',
                 'qty' => 'required',
-                'price' => 'required',
             ]);
 
             $user = auth()->user();

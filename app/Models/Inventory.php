@@ -23,18 +23,18 @@ class Inventory extends Model
         return $this->hasMany(Item::class);
     }
 
-    static public function findByUserId(int $userId, bool $isDeleted = false) {
-        $result = self::where("user_id", $userId)->where("is_deleted", $isDeleted)->get();
+    static public function findByUserId(int $userId) {
+        $result = self::where("user_id", $userId)->get();
         return $result;
     }
 
-    static public function findOne(int $id, int $userId, bool $isDeleted = false) {
-        $result = self::where("id", $id)->where("user_id", $userId)->where("is_deleted", $isDeleted)->first();
+    static public function findOne(int $id, int $userId) {
+        $result = self::where("id", $id)->where("user_id", $userId)->first();
         return $result;
     }
 
-    static public function findManyById(int $id, int $userId, bool $isDeleted = false) {
-        $result = self::where("id", $id)->where("user_id", $userId)->where("is_deleted", $isDeleted)->get();
+    static public function findManyById(int $id, int $userId) {
+        $result = self::where("id", $id)->where("user_id", $userId)->get();
         return $result;
     }
 

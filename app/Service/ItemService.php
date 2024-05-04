@@ -21,9 +21,6 @@ class ItemService {
         if($request->qty <= 0){
             throw new GeneralException('Item quantity must be greater than zero');
         }
-        if($request->price <= 0){
-            throw new GeneralException('Item price must be greater than zero');
-        }
     }
 
     static public function createItem(Request $request) {
@@ -37,11 +34,6 @@ class ItemService {
             $item->name = $request->name;
             $item->description = $request->description;
             $item->qty = $request->qty;
-            $item->price = $request->price;
-
-            if(isset($request->min_stock)){
-                $item->min_stock = $request->min_stock;
-            }
 
             $item->save();
 
@@ -61,9 +53,6 @@ class ItemService {
     }
 
    
-
-   
-
     static public function deleteItem($id) {
         try {
             DB::beginTransaction();
@@ -94,9 +83,7 @@ class ItemService {
         if($request->qty <= 0){
             throw new GeneralException('Item quantity must be greater than zero');
         }
-        if($request->price <= 0){
-            throw new GeneralException('Item price must be greater than zero');
-        }
+
     }
 
     static public function updateItem(Request $request) {
@@ -108,11 +95,6 @@ class ItemService {
             $item->name = $request->name;
             $item->description = $request->description;
             $item->qty = $request->qty;
-            $item->price = $request->price;
-
-            if(isset($request->min_stock)){
-                $item->min_stock = $request->min_stock;
-            }
 
             $item->save();
 

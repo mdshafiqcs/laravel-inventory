@@ -19,13 +19,13 @@ class Item extends Model
     	return $this->belongsTo(User::class,'inventory_id','id');
     }
 
-    static public function findByInventoryId(int $inventoryId, bool $isDeleted = false){
-        $items = Item::where('inventory_id', $inventoryId)->where('is_deleted', $isDeleted)->get();
+    static public function findByInventoryId(int $inventoryId){
+        $items = Item::where('inventory_id', $inventoryId)->get();
         return $items;
     }
 
-    static public function findById(int $id, bool $isDeleted = false){
-        $item = Item::where('id', $id)->where('is_deleted', $isDeleted)->first();
+    static public function findById(int $id){
+        $item = Item::where('id', $id)->first();
         return $item;
     }
 

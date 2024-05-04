@@ -19,9 +19,6 @@ return new class extends Migration
             $table->text('description');
             $table->string('image')->nullable();
             $table->integer('qty');
-            $table->double('price');
-            $table->integer('min_stock')->default(0)->comment("when to show low stock alert");
-            $table->boolean('is_deleted')->default(false);
             $table->timestamps();
         });
     }
