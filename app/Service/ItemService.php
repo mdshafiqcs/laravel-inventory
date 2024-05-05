@@ -55,23 +55,20 @@ class ItemService {
    
     static public function deleteItem($id) {
         try {
-            DB::beginTransaction();
+           
             $item = Item::find($id);
             if(!$item){
-                throw new NotFoundException('Item not found.');
+                return false;
             }
 
             CommonHelper::deleteImage($item->image);
 
             $item->delete();
 
-            DB::commit();
-
             return true;
             
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 
