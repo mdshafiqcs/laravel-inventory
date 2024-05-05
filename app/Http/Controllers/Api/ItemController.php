@@ -9,6 +9,7 @@ use Illuminate\Validation\ValidationException;
 use App\Enum\Status;
 use App\Exceptions\GeneralException;
 use App\Exceptions\NotFoundException;
+use App\Models\Inventory;
 use App\Models\Item;
 use App\Traits\ResponseTrait;
 use App\Service\ItemService;
@@ -24,8 +25,8 @@ class ItemController extends Controller
 
             return $this->successResponse($items);
 
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Something went wrong", 500, Status::ERROR);
         }
     }
 
@@ -38,12 +39,15 @@ class ItemController extends Controller
                 'name' => 'required',
                 'description' => 'required',
                 'image' => 'required|mimes:png,jpg,jpeg',
-                'qty' => 'required',
+                'qty' => 'required|numeric|min:1',
             ]);
 
             $user = auth()->user();
 
-            ItemService::checkCreateItem($request, $user->id);
+            $inventory = Inventory::findOne($request->inventory_id, $user->id);
+            if(!$inventory){
+                return $this->errorResponse("Inventory not found with this inventory id");
+            }
 
             $item = ItemService::createItem($request);
 
@@ -51,12 +55,8 @@ class ItemController extends Controller
 
         } catch(ValidationException $e){
             return $this->errorResponse($e->getMessage(), 422, Status::ERROR);
-        } catch(NotFoundException $e){
-            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
-        } catch(GeneralException $e){
-            return $this->errorResponse($e->getMessage());
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Something went wrong", 500, Status::ERROR);
         }
     }
 
@@ -68,23 +68,22 @@ class ItemController extends Controller
                 'name' => 'required',
                 'description' => 'required',
                 'image' => 'sometimes|mimes:jpg,png,jpeg',
-                'qty' => 'required',
+                'qty' => 'required|numeric|min:1',
             ]);
 
-            ItemService::checkUpdateItem($request);
+            $item = Item::find($request->id);
+            if(!$item){
+                return $this->errorResponse("Item not found with this Item id");
+            }
+            
+            $updatedItem = ItemService::updateItem($request, $item);
 
-            $item = ItemService::updateItem($request);
-
-            return $this->successResponse($item, "Item Updated Successfully.");
+            return $this->successResponse($updatedItem, "Item Updated Successfully.");
 
         } catch(ValidationException $e){
             return $this->errorResponse($e->getMessage(), 422, Status::ERROR);
-        } catch(NotFoundException $e){
-            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
-        } catch(GeneralException $e){
-            return $this->errorResponse($e->getMessage());
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Something went wrong", 500, Status::ERROR);
         }
     }
 
@@ -93,14 +92,17 @@ class ItemController extends Controller
     public function delete($id) {
         try {
 
+            $item = Item::find($id);
+            if(!$item){
+                return $this->errorResponse("Item not found");
+            }
+
             ItemService::deleteItem($id);
 
             return $this->successResponse("", "Item Deleted Successfully.");
             
-        } catch ( NotFoundException $e) {
-            return $this->errorResponse($e->getMessage(), 404, Status::ERROR);
-        } catch (\Throwable $th) {
-            return $this->errorResponse("Internal Server Error", 500, Status::ERROR);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Something went wrong", 500, Status::ERROR);
         }
     }
 

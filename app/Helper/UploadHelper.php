@@ -4,7 +4,7 @@ namespace App\Helper;
 
 use Illuminate\Support\Str;
 
-class CommonHelper {
+class UploadHelper {
     static public function saveImage($image, string $path = 'public') {
 
         try {
@@ -16,8 +16,8 @@ class CommonHelper {
             }
             return null;
 
-        } catch (\Throwable $th) {
-            throw $th;
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 
@@ -27,8 +27,8 @@ class CommonHelper {
             if(file_exists(public_path().'/'.$path)){
                 unlink(public_path().'/'.$path);
             }
-        } catch (\Throwable $th) {
-            throw $th;
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 }

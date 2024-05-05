@@ -2,52 +2,32 @@
 
 namespace App\Service;
 
-use App\Exceptions\GeneralException;
-use App\Exceptions\NotFoundException;
-use App\Helper\CommonHelper;
-use App\Models\Inventory;
+use App\Helper\UploadHelper;
 use App\Models\Item;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ItemService {
     
-    static public function checkCreateItem(Request $request, int $userId) {
-        $inventory = Inventory::findOne($request->inventory_id, $userId);
-        if(!$inventory){
-            throw new NotFoundException('Inventory not found with this inventory id');
-        }
-        if($request->qty <= 0){
-            throw new GeneralException('Item quantity must be greater than zero');
-        }
-    }
 
     static public function createItem(Request $request) {
 
         try {
 
-            DB::beginTransaction();
-           
+            $imagePath = UploadHelper::saveImage($request->file("image"), 'item_image');
+            
             $item = new Item();
             $item->inventory_id = $request->inventory_id;
             $item->name = $request->name;
             $item->description = $request->description;
             $item->qty = $request->qty;
-
-            $item->save();
-
-            $imagePath = CommonHelper::saveImage($request->file("image"), 'item_image');
             $item->image = $imagePath;
-            $item->save();
 
-            DB::commit();
+            $item->save();
 
             return $item;
             
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
+        } catch (\Exception $e) {
+            throw $e;
         }
 
     }
@@ -61,7 +41,7 @@ class ItemService {
                 return false;
             }
 
-            CommonHelper::deleteImage($item->image);
+            UploadHelper::deleteImage($item->image);
 
             $item->delete();
 
@@ -72,47 +52,35 @@ class ItemService {
         }
     }
 
-    static public function checkUpdateItem(Request $request){
-        $item = Item::findById($request->id);
-        if(!$item){
-            throw new NotFoundException('Item not found with this Item id');
-        }
-        if($request->qty <= 0){
-            throw new GeneralException('Item quantity must be greater than zero');
-        }
 
-    }
-
-    static public function updateItem(Request $request) {
+    static public function updateItem(Request $request, Item $item) {
 
         try {
-            DB::beginTransaction();
 
-            $item = Item::findById($request->id);
+            $imagePath = null;
+            
+            if($request->image){
+                $imagePath = UploadHelper::saveImage($request->file("image"), 'item_image');
+
+                if($imagePath){
+                    UploadHelper::deleteImage($item->image);
+                }
+            }
+
             $item->name = $request->name;
             $item->description = $request->description;
             $item->qty = $request->qty;
 
-            $item->save();
-
-            if($request->image){
-                $imagePath = CommonHelper::saveImage($request->file("image"), 'item_image');
-
-                if($imagePath){
-                    CommonHelper::deleteImage($item->image);
-                    $item->image = $imagePath;
-                    $item->save();
-                }
+            if($imagePath){
+                $item->image = $imagePath;
             }
 
-            DB::commit();
+            $item->save();
 
             return $item;
             
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
+        } catch (\Exception $e) {
+            throw $e;
         }
-
     }
 }

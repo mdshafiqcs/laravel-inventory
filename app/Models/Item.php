@@ -23,14 +23,6 @@ class Item extends Model
         $items = Item::where('inventory_id', $inventoryId)->get();
         return $items;
     }
-
-    static public function findById(int $id){
-        $item = Item::where('id', $id)->first();
-        return $item;
-    }
-
-    
-
     
 
 }
