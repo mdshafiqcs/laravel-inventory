@@ -7,8 +7,6 @@ use Illuminate\Http\Request;
 
 use Illuminate\Validation\ValidationException;
 use App\Enum\Status;
-use App\Exceptions\GeneralException;
-use App\Exceptions\NotFoundException;
 use App\Models\Inventory;
 use App\Models\Item;
 use App\Traits\ResponseTrait;
