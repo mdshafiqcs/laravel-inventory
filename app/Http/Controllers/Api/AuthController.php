@@ -41,9 +41,11 @@ class AuthController extends Controller
 
             return $this->successResponse($user, "Registration Successfull");
             
-        } catch(ValidationException $e){
-            return $this->errorResponse($e->getMessage(), 422, Status::ERROR);
-        } catch (\Exception $e) {
+        } 
+        // catch(ValidationException $e){
+        //     return $this->errorResponse($e->getMessage(), 422, Status::ERROR);
+        // } 
+        catch (\Exception $e) {
             return $this->errorResponse("Something went wrong", 500, Status::ERROR);
         }
     }
